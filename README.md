@@ -1,6 +1,6 @@
 ## README
 
-This project contains code files for creating unsupervised analysis of song similarity retrieved from Spotify. Some concepts are addressed, like EDA, clustering and dendograms. You are expected to know how to run R. Tidyverse and httr are required among other packages.
+This project contains code files for creating an unsupervised analysis of song similarity using data retrieved from Spotify. Some concepts are addressed, like EDA, clustering and dendograms. You are expected to know how to run R. Tidyverse and httr are required among other packages.
 
 ### Structure
 
