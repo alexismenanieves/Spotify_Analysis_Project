@@ -29,13 +29,13 @@ get_spotify_access <- function(
 }
 
 # This is the main function that retrieves artist, albums and tracks
-get_artist_audio_features <- function(
+retrieve_audio_features <- function(
   artist = NULL, include_groups = 'album', 
   return_closest_artist = TRUE, dedupe_albums = TRUE,
   authorization = get_spotify_access()) {
   
   if(is_uri(artist)){
-    artist_info = get_artist(
+    artist_info = retrieve_artist(
       artist, authorization = get_spotify_access)
     artist_id <- artist_info$id
     artist_name <- artist_id$name
@@ -59,14 +59,14 @@ get_artist_audio_features <- function(
     }
   }
   
-  artist_albums <- get_artist_albums(
+  artist_albums <- retrieve_artist_albums(
     artist_id, include_groups = include_groups,
     include_meta_info = TRUE, authorization = authorization)
 
   num_loops_albums <- ceiling(artist_albums$total / 20)
   if(num_loops_albums > 1) {
     artist_albums <- map_df(1:num_loops_albums, function(x){
-      get_artist_albums(
+      retrieve_artist_albums(
         artist_id, include_groups = include_groups,
         offset = (x-1) * 20, authorization = authorization)
     })
@@ -86,13 +86,13 @@ get_artist_audio_features <- function(
     ))
   
   album_tracks <- map_df(artist_albums$album_id, function(x) {
-    album_tracks <- get_album_tracks(x, include_meta_info = TRUE,
+    album_tracks <- retrieve_album_tracks(x, include_meta_info = TRUE,
                                      authorization = authorization)
     num_loops_tracks <- ceiling(album_tracks$total / 20)
     if(num_loops_tracks > 1) {
       album_tracks <- map_df(1:num_loops_tracks, function(y){
-        get_album_tracks(x, offset = (y -1)*20,
-                         authorization = authorization)
+        retrieve_album_tracks(x, offset = (y -1)*20,
+                              authorization = authorization)
       })
     } else {
       album_tracks <- album_tracks$items
@@ -115,7 +115,7 @@ get_artist_audio_features <- function(
       track_ids <- album_tracks %>%
         slice(((x*100)-99):(x*100)) %>%
         pull(track_id)
-      get_track_audio_features(track_ids, authorization = authorization)
+      retrieve_track_audio_features(track_ids, authorization = authorization)
     }
   ) %>%
     select(-c("duration_ms","type","uri","track_href")) %>%
@@ -139,7 +139,7 @@ get_artist_audio_features <- function(
            ))
 }
 
-get_artist <- function(id, authorization = get_spotify_access()) {
+retrieve_artist <- function(id, authorization = get_spotify_access()) {
   base_url <- "https://api.spotify.com/v1/artists"
   params <- list(access_token = authorization)
   url <- glue("{base_url}/{id}")
@@ -150,7 +150,7 @@ get_artist <- function(id, authorization = get_spotify_access()) {
   return(res)
 } 
 
-get_artist_albums <- function(
+retrieve_artist_albums <- function(
   id, include_groups = c("album","single","appears_on","compilation"),
   market = NULL, limit = 20, offset = 0, 
   authorization = get_spotify_access(),
@@ -188,7 +188,7 @@ get_artist_albums <- function(
   return(res)
 }
 
-get_album_tracks <- function(
+retrieve_album_tracks <- function(
   id, limit = 20, offset = 0, market = NULL,
   authorization = get_spotify_access(),
   include_meta_info = FALSE) {
@@ -222,7 +222,7 @@ get_album_tracks <- function(
   return(res)
 }
 
-get_track_audio_features <- function(
+retrieve_track_audio_features <- function(
   ids, authorization = get_spotify_access()) {
   
   stopifnot(length(ids)<=100)
