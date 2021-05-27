@@ -16,8 +16,10 @@ source("Spotify_Analysis_Connection.R")
 # Step 1. Load data and make basic exploration ----------------------------
 pearl_jam_songs <- get_artist_audio_features("pearl jam")
 dim(pearl_jam_songs)
-str(pearl_jam_songs)
 glimpse(pearl_jam_songs)
+
+# Are there any NA's in the dataset?
+colSums(!is.na(pearl_jam_songs))
 
 # Let's count the albums and the songs per album
 pearl_jam_songs %>% 
@@ -33,7 +35,8 @@ pearl_jam_songs %>%
   filter(album_name %in% c("Vitalogy","Vs.")) %>%
   select(album_name, track_name)
 
-# Step 2.  Data cleaning and wrangling ------------------------------------
+
+# Step 2. Data cleaning and exploratory analysis --------------------------
 pearl_jam_songs_clean <- pearl_jam_songs %>%
   select(album_id, album_name,album_release_year,
          track_name, duration_ms, explicit,
@@ -59,3 +62,5 @@ pearl_jam_songs_clean <- pearl_jam_songs %>%
 
 pearl_jam_songs_clean %>%
   select(album_name, track_name)
+
+summary(pearl_jam_songs_clean)
