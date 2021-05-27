@@ -10,11 +10,12 @@ library(dplyr)
 library(ggplot2)
 library(ggtext)
 library(ggdendro)
+library(dendextend)
 
 source("Spotify_Analysis_Connection.R")
 
 # Step 1. Load data and make basic exploration ----------------------------
-pearl_jam_songs <- get_artist_audio_features("pearl jam")
+pearl_jam_songs <- retrieve_audio_features("pearl jam")
 dim(pearl_jam_songs)
 glimpse(pearl_jam_songs)
 
@@ -47,8 +48,7 @@ pearl_jam_songs_clean <- pearl_jam_songs %>%
                          "5pd9B3KQWKshHw4lnsSLNy",
                          "3FKhxgSZdtJBIjdHsjbxI0",
                          "5zsDtoSrXK4usJ4MB1tCh2",
-                         "1RuYprt6Qlqu286h1f4dzZ",
-                         "7AOWw68DEPnDmTpquZw8bG")) %>% 
+                         "1RuYprt6Qlqu286h1f4dzZ")) %>% 
   mutate(track_name = gsub("\\(Remastered\\)","",track_name),
          track_name = gsub("- Remastered","",track_name),
          track_name = trimws(track_name)) %>%
@@ -84,7 +84,7 @@ pearl_jam_songs_clean %>%
   pivot_longer(-album_name, names_to = "Measure", 
                values_to = "Value") %>%
   ggplot(aes(Value, fill = Measure)) +
-  geom_density(fill = "seagreen", alpha = .7) +
+  geom_density(fill = "seagreen", color = "seagreen", alpha = .7) +
   facet_wrap(~album_name, scales = "free")
 
 # And now the density plot of loudness by album
@@ -97,6 +97,82 @@ pearl_jam_songs_clean %>%
   facet_wrap(~album_name, scales = "free")
 
 # Step 4. Cluster analysis ------------------------------------------------
+songs_distance <- pearl_jam_songs_clean %>%
+  select(-c("album_id","album_name","track_name",
+            "album_release_year","explicit")) %>%
+  as.matrix() %>%
+  scale(center = TRUE, scale = TRUE) %>% 
+  dist()
 
+songs_hclust <- hclust(songs_distance, method = "average")
+dend <- songs_hclust %>% as.dendrogram()
+plot(dend)
 
+album_colors <- pearl_jam_songs_clean$album_name %>%
+  recode("Ten" = "red", "Vs." = "grey", "Vitalogy" = "cyan1",
+         "No Code" = "green", "Yield" = "yellow", "Binaural" = "orange")
+
+album_colors <- album_colors[order.dendrogram(dend)]
+labels(dend) <- pearl_jam_songs_clean$track_name[order.dendrogram(dend)]
+
+par(mar = c(2,2,2,12))
+par(family = 'Avenir')
+dend %>% 
+  set("branches_col", "gray30") %>% 
+  set("labels_col", "gray30") %>%
+  set("labels_cex", 0.6) %>%
+  set("leaves_pch", 15) %>%
+  set("leaves_col", album_colors) %>%
+  set("nodes_cex", 0.85) %>% 
+  plot(horiz = TRUE, main = list("Pearl Jam Song Similarity", cex = 1.5))
+legend("topleft", cex = 0.5, title = 'Album',
+       legend = c('Ten', 'Vs.', 'Vitalogy', 
+                  'No Code','Yield','Binaural'), 
+       fill = c('red', 'grey', 'cyan1', 'green', 'yellow', 
+                'orange'))
  
+songs_distance <- pearl_jam_songs_clean %>% 
+  mutate(track_name = substring(track_name,1,12)) %>%
+  tibble::remove_rownames() %>%
+  tibble::column_to_rownames(var = "track_name") %>%
+  select(-c("album_id","album_name",
+            "album_release_year","explicit")) %>%
+  scale(center = TRUE, scale = TRUE)
+
+hc <- hclust(dist(songs_distance), method = "average")
+hcdata <- dendro_data(hc, type = "rectangle")
+ggplot() +
+  geom_segment(data = segment(hcdata),
+               aes(x = x, y = y, xend = xend, yend = yend),
+               size = .5) +
+  geom_text(data = label(hcdata),
+            aes(x = x, y = y, label = label, hjust = 0),
+            size = 2) +
+  coord_flip() +
+  scale_y_reverse(expand = c(0.2,0))
+labs <- label(hcdata)
+
+labs$group <- sort_label$sort_label
+
+sort_label <- hcdata$labels$label
+sort_label <- as.data.frame(sort_label) %>%
+  rename(link = sort_label)
+nesuno <- pearl_jam_songs_clean %>%
+  select(album_name, track_name) %>%
+  mutate(track_name = substring(track_name,1,12))
+
+sort_label <- sort_label %>%
+  left_join(nesuno, by = c("link"="track_name"))
+
+labs$group <-sort_label$album_name
+
+# Create ggdendogram
+ggplot() +
+  geom_segment(data = segment(hcdata),
+               aes(x = x, y = y, xend = xend, yend = yend),
+               size = .5) +
+  geom_text(data = label(hcdata),
+            aes(x = x, y = y, label = label, hjust = 0, colour = labs$group),
+            size = 3) +
+  coord_flip() +
+  scale_y_reverse(expand = c(0.2,0))
