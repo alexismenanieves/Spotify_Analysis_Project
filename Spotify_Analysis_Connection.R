@@ -101,5 +101,31 @@ get_artist_audio_features <- function(
              track_id = id)
   })
   
+  total_loop_tracks <- ceiling(nrow(album_tracks)/100)
+  track_audio_features <- map_df(
+    1:total_loop_tracks, function(x){
+      tracks_id <- album_tracks %>%
+        slice(((x*100)-99):(x*100)) %>%
+        pull(track_id)
+    }
+  ) %>% 
+    select(-c("duration_ms","type","uri","track_href")) %>%
+    rename(track_id = id) %>%
+    left_join(album_tracks, by = "track_id")
   
+  artist_albums %>%
+    mutate(artist_name = artist_name,
+           artist_id = artist_id) %>%
+    select(artist_name, artist_id, album_id, 
+           album_type, album_images = images, 
+           album_release_date = release_date,
+           release_year, 
+           album_release_date_precision = release_date_precision) %>%
+    left_join(track_audio_features, by = "album_id") %>%
+    mutate(key_name = pitch_class_lookup[key + 1],
+           mode_name = case_when(
+             mode == 1 ~ "major",
+             mode == 0 ~"minor",
+             TRUE ~ as.character(NA)
+           ))
 }
