@@ -143,14 +143,79 @@ get_artist <- function(id, authorization = get_spotify_access()) {
   stop_for_status(res)
   res <- fromJSON(content(res, as = "text", encoding = "utf-8"), 
                   flatten = TRUE)
+  return(res)
 } 
 
-is_uri <- function(x) {
-  nchar(x) == 22 &
-    !grepl(" ",x) &
-    grepl("[[:digit:]]",x) &
-    grepl("[[:lower:]]",x) &
-    grepl("[[:upper:]]",x)
+get_artist_albums <- function(
+  id, include_groups = c("album","single","appears_on","compilation"),
+  market = NULL, limit = 20, offset = 0, 
+  authorization = get_spotify_access(),
+  include_meta_info = FALSE){
+  
+  base_url <- 'https://api.spotify.com/v1/artists'
+  
+  if(!is.null(market)){
+    if(!grepl('^[[:alpha:]]{2}$',market)){
+      stop("Argument market must be ISO 3166-1 alpha-2 country code")
+    }
+  }
+  
+  params <- list(
+    include_groups = paste(include_groups, collapse = ","),
+    market = market,
+    limit = limit,
+    offset = offset,
+    access_token = authorization
+  )
+  
+  url <- glue("{base_url}/{id}/albums")
+  
+  res <- GET(url, query = params, encode = "json")
+  
+  stop_for_status(res)
+  
+  res <- fromJSON(content(res, as = "text", encoding = "utf-8"), 
+                  flatten = TRUE)
+  
+  if(!include_meta_info){
+    res <- res$items
+  }
+  
+  return(res)
+}
+
+get_album_tracks <- function(
+  id, limit = 20, offset = 20, market = NULL,
+  authorization = get_spotify_access(),
+  include_meta_info = FALSE) {
+  
+  base_url <- 'https://api.spotify.com/v1/artists'
+  
+  if(!is.null(market)){
+    if(!grepl('^[[:alpha:]]{2}$',market)){
+      stop("Argument market must be ISO 3166-1 alpha-2 country code")
+    }
+  }
+  
+  params <- list(
+    market = market,
+    offset = offset,
+    limit = limit,
+    access_token = authorization
+  )
+  
+  url <- glue("{base_url}/{id}/tracks")
+  res <- RETRY("GET", url, query = params, encode = "json")
+  stop_for_status(res)
+  
+  res <- fromJSON(content(res, as = "text", encoding = "utf-8"),
+                  flatten = TRUE)
+  
+  if(!include_meta_info){
+    res <- res$items
+  }
+  
+  return(res)
 }
 
 search_spotify <- function(
@@ -201,8 +266,18 @@ search_spotify <- function(
   res <- fromJSON(content(res, as = "text", encoding = "utf-8"),
                   flatten = TRUE)
   
-  res <- res[[glue("{type}s")]]$items %>%
+  if(!include_meta_info && length(type) == 1){
+    res <- res[[glue("{type}s")]]$items %>%
     as_tibble
+  }
+  
+  return(res)
 }
 
-
+is_uri <- function(x) {
+  nchar(x) == 22 &
+    !grepl(" ",x) &
+    grepl("[[:digit:]]",x) &
+    grepl("[[:lower:]]",x) &
+    grepl("[[:upper:]]",x)
+}
