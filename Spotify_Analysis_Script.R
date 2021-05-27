@@ -35,8 +35,7 @@ pearl_jam_songs %>%
   filter(album_name %in% c("Vitalogy","Vs.")) %>%
   select(album_name, track_name)
 
-
-# Step 2. Data cleaning and exploratory analysis --------------------------
+# Step 2. Data cleaning and wrangling -------------------------------------
 pearl_jam_songs_clean <- pearl_jam_songs %>%
   select(album_id, album_name,album_release_year,
          track_name, duration_ms, explicit,
@@ -63,4 +62,33 @@ pearl_jam_songs_clean <- pearl_jam_songs %>%
 pearl_jam_songs_clean %>%
   select(album_name, track_name)
 
+# Step 3. Exploratory data analysis ---------------------------------------
 summary(pearl_jam_songs_clean)
+
+pearl_jam_songs_clean %>%
+  select(album_name, duration_ms, explicit,
+         danceability, energy, loudness,
+         speechiness, acousticness, instrumentalness,
+         liveness, valence, tempo) %>%
+  pivot_longer(-album_name, names_to = "Measure", 
+               values_to = "Value") %>%
+  ggplot(aes(Value)) +
+  geom_histogram(fill = "midnightblue", alpha = .9) +
+  facet_wrap(~Measure, scales = "free")
+
+pearl_jam_songs_clean %>%
+  select(album_name, energy) %>%
+  pivot_longer(-album_name, names_to = "Measure", 
+               values_to = "Value") %>%
+  ggplot(aes(Value, fill = Measure)) +
+  geom_density(fill = "seagreen", alpha = .7) +
+  facet_wrap(~album_name, scales = "free")
+
+pearl_jam_songs_clean %>%
+  select(album_name, loudness) %>%
+  pivot_longer(-album_name, names_to = "Measure", 
+               values_to = "Value") %>%
+  ggplot(aes(Value, fill = Measure)) +
+  geom_density(fill = "midnightblue", color = "midnightblue", alpha = .7) +
+  facet_wrap(~album_name, scales = "free")
+ 
