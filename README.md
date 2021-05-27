@@ -5,9 +5,9 @@ This project contains code files for creating an unsupervised analysis of song s
 ### Structure
 
 The main files are:
-- `Spotify_Analysis_Connection.R`: R script which contains functions for creating the connection to Spotify and retrieves data like artists, albums and tracks
-- `Spotify_Analysis_Plot_Config`: R script with the ggplot theme configuration
 - `Spotify_Analysis_Script`: R script that contains the data cleaning, a basic EDA and a clustering of song data, from some artists like Pearl Jam and Pedro Suarez-Vertiz
+- `Spotify_Analysis_Connection`: R script which contains functions for creating the connection to Spotify and retrieves data like artists, albums and tracks
+- `Spotify_Analysis_Plot_Config`: R script with the ggplot theme configuration
 - `README.md`: A brief overview of the project
 
 ### Further reading
