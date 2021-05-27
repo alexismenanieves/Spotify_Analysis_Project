@@ -306,4 +306,6 @@ is_uri <- function(x) {
     grepl("[[:upper:]]",x)
 }
 
-pitch_class_lookup <- c('C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B')
+# Added pitch
+pitch_class_lookup <- c('C', 'C#', 'D', 'D#', 'E', 'F', 
+                        'F#', 'G', 'G#', 'A', 'A#', 'B')
