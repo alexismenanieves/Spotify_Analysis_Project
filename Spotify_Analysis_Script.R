@@ -220,15 +220,43 @@ pedro_songs_clean <- pedro_songs %>%
                          "7BjsgXmi5ZPl2rT30HLFs8",
                          "5Ys57kjTWys8pkMMM3guJk",
                          "6jTyptkI9CVq0qAgQsoxUd")) %>% 
-  mutate(track_name = gsub("\\(Remastered\\)","",track_name),
-         track_name = gsub("- Remastered","",track_name),
-         track_name = trimws(track_name)) %>%
-  filter(!track_name %in% c("Hold On - bonus track",
-                            "Cready Stomp - bonus track",
-                            "Crazy Mary",
-                            "Better Man - Guitar / Organ Only",
-                            "Corduroy - Alternate Take",
-                            "Nothingman - Demo"))
+  mutate(track_name = substring(track_name,1,20)) %>%
+  filter(!track_name %in% c("Bailar (Remix)",
+                            "Rara Soledad (Incidental)"))
 
-pearl_jam_songs_clean %>%
+pedro_songs_clean %>%
   select(album_name, track_name)
+
+# Step 3. Exploratory data analysis ---------------------------------------
+# Let's see the summary of the data
+summary(pedro_songs_clean)
+
+# Now we can create an histogram for each measure
+pedro_songs_clean %>%
+  select(album_name, duration_ms, explicit,
+         danceability, energy, loudness,
+         speechiness, acousticness, instrumentalness,
+         liveness, valence, tempo) %>%
+  pivot_longer(-album_name, names_to = "Measure", 
+               values_to = "Value") %>%
+  ggplot(aes(Value)) +
+  geom_histogram(fill = "midnightblue", alpha = .9) +
+  facet_wrap(~Measure, scales = "free")
+
+# Let's see the density plot of energy by album
+pedro_songs_clean %>%
+  select(album_name, energy) %>%
+  pivot_longer(-album_name, names_to = "Measure", 
+               values_to = "Value") %>%
+  ggplot(aes(Value, fill = Measure)) +
+  geom_density(fill = "seagreen", color = "seagreen", alpha = .7) +
+  facet_wrap(~album_name, scales = "free")
+
+# And now the density plot of loudness by album
+pedro_songs_clean %>%
+  select(album_name, loudness) %>%
+  pivot_longer(-album_name, names_to = "Measure", 
+               values_to = "Value") %>%
+  ggplot(aes(Value, fill = Measure)) +
+  geom_density(fill = "midnightblue", color = "midnightblue", alpha = .7) +
+  facet_wrap(~album_name, scales = "free")
