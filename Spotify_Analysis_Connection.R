@@ -1,3 +1,4 @@
+# Step 0.  Load libraries and functions -----------------------------------
 library(httr)
 library(tidyr)
 library(dplyr)
@@ -5,24 +6,28 @@ library(purrr)
 library(jsonlite)
 library(glue)
 
+# This function retrieves the access token from Spotify via its API
 get_spotify_access <- function(
+  # Environment variables are saved in .Renviron
   client_id = Sys.getenv("SPOTIFY_CLIENT_ID"),
   client_secret = Sys.getenv("SPOTIFY_CLIENT_SECRET")) {
+  # Now we call the API via httr, using POST method
   post <- RETRY('POST','https://accounts.spotify.com/api/token',
                 accept_json(), authenticate(client_id, client_secret),
                 body = list(grant_type = "client_credentials"),
                 encode = "form", 
                 httr::config(http_version = 2)) %>%
     content
-  
+  # In case there is no result due to bad authentication
   if(!is.null(post$error)){
     stop(glue('Could not authenticate with given credentials:\n',
               '{post$error_description}'))
   }
-  
+  # The access token is returned
   access_token <- post$access_token
 }
 
+# This is the main function that retrieves artist, albums and tracks
 get_artist_audio_features <- function(
   artist = NULL, include_groups = 'albums', 
   return_closest_artist = TRUE, dedupe_albums = TRUE,
@@ -129,3 +134,17 @@ get_artist_audio_features <- function(
              TRUE ~ as.character(NA)
            ))
 }
+
+get_artist <- function(id, authorization = get_spotify_access()) {
+  base_url <- "https://api.spotify.com/v1/artists"
+  params <- list(access_token = authorization)
+  url <- glue("{base_url}/{id}")
+  res <- GET(url, query = params, encode = "json")
+  stop_for_status(res)
+  res <- fromJSON(content(res, as = "text", encoding = "utf-8"), 
+                  flatten = TRUE)
+} 
+
+
+
+
