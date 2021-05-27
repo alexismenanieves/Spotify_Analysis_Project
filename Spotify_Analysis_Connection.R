@@ -86,7 +86,6 @@ get_artist_audio_features <- function(
     ))
   
   album_tracks <- map_df(artist_albums$album_id, function(x) {
-    print(x)
     album_tracks <- get_album_tracks(x, include_meta_info = TRUE,
                                      authorization = authorization)
     num_loops_tracks <- ceiling(album_tracks$total / 20)
@@ -129,7 +128,7 @@ get_artist_audio_features <- function(
     select(artist_name, artist_id, album_id,
            album_type, album_images = images,
            album_release_date = release_date,
-           release_year,
+           album_release_year,
            album_release_date_precision = release_date_precision) %>%
     left_join(track_audio_features, by = "album_id") %>%
     mutate(key_name = pitch_class_lookup[key + 1],
@@ -306,3 +305,5 @@ is_uri <- function(x) {
     grepl("[[:lower:]]",x) &
     grepl("[[:upper:]]",x)
 }
+
+pitch_class_lookup <- c('C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B')
