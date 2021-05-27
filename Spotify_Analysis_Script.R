@@ -19,12 +19,19 @@ dim(pearl_jam_songs)
 str(pearl_jam_songs)
 glimpse(pearl_jam_songs)
 
+# Let's count the albums and the songs per album
 pearl_jam_songs %>% 
   group_by(album_id) %>%
-  summarise(name = first(album_name)) %>%
+  summarise(name = first(album_name),
+            count = n()) %>%
   arrange(name) %>%
   as.data.frame() %>%
   head(25)
+
+# We can see what songs are in Vitalogy and Vs.
+pearl_jam_songs %>% 
+  filter(album_name %in% c("Vitalogy","Vs.")) %>%
+  select(album_name, track_name)
 
 # Step 2.  Data cleaning and wrangling ------------------------------------
 pearl_jam_songs_clean <- pearl_jam_songs %>%
@@ -39,17 +46,16 @@ pearl_jam_songs_clean <- pearl_jam_songs %>%
                          "3FKhxgSZdtJBIjdHsjbxI0",
                          "5zsDtoSrXK4usJ4MB1tCh2",
                          "1RuYprt6Qlqu286h1f4dzZ",
-                         "7AOWw68DEPnDmTpquZw8bG"))
+                         "7AOWw68DEPnDmTpquZw8bG")) %>% 
+  mutate(track_name = gsub("\\(Remastered\\)","",track_name),
+         track_name = gsub("- Remastered","",track_name),
+         track_name = trimws(track_name)) %>%
+  filter(!track_name %in% c("Hold On - bonus track",
+                            "Cready Stomp - bonus track",
+                            "Crazy Mary",
+                            "Better Man - Guitar / Organ Only",
+                            "Corduroy - Alternate Take",
+                            "Nothingman - Demo"))
 
-pearl_jam_songs_clean %>% 
-  group_by(album_id) %>% 
-  summarise(name = first(album_name),
-            count = n()) %>%
-  arrange(name) %>%
-  as.data.frame() %>%
-  head(25)
-
-pearl_jam_songs_clean %>% 
-  filter(album_name == "Vitalogy") %>%
-  select(track_name)
-
+pearl_jam_songs_clean %>%
+  select(album_name, track_name)
