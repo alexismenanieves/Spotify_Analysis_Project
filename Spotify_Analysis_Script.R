@@ -63,8 +63,10 @@ pearl_jam_songs_clean %>%
   select(album_name, track_name)
 
 # Step 3. Exploratory data analysis ---------------------------------------
+# Let's see the summary of the data
 summary(pearl_jam_songs_clean)
 
+# Now we can create an histogram for each measure
 pearl_jam_songs_clean %>%
   select(album_name, duration_ms, explicit,
          danceability, energy, loudness,
@@ -76,6 +78,7 @@ pearl_jam_songs_clean %>%
   geom_histogram(fill = "midnightblue", alpha = .9) +
   facet_wrap(~Measure, scales = "free")
 
+# Let's see the density plot of energy by album
 pearl_jam_songs_clean %>%
   select(album_name, energy) %>%
   pivot_longer(-album_name, names_to = "Measure", 
@@ -84,6 +87,7 @@ pearl_jam_songs_clean %>%
   geom_density(fill = "seagreen", alpha = .7) +
   facet_wrap(~album_name, scales = "free")
 
+# And now the density plot of loudness by album
 pearl_jam_songs_clean %>%
   select(album_name, loudness) %>%
   pivot_longer(-album_name, names_to = "Measure", 
