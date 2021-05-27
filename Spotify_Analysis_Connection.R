@@ -145,6 +145,64 @@ get_artist <- function(id, authorization = get_spotify_access()) {
                   flatten = TRUE)
 } 
 
+is_uri <- function(x) {
+  nchar(x) == 22 &
+    !grepl(" ",x) &
+    grepl("[[:digit:]]",x) &
+    grepl("[[:lower:]]",x) &
+    grepl("[[:upper:]]",x)
+}
 
+search_spotify <- function(
+  q, type = c("album","artist","playlist","track"), market = NULL,
+  limit = 20, offset = 0, include_external = NULL,
+  authorization = get_spotify_access(), include_meta_info = FALSE
+){
+  
+  base_url <- "https://api.spotify.com/v1/search"
+  
+  if(!is.character(q)){
+    stop("Argument q must be a string")
+  }
+  
+  if(!is.null(market)){
+    if(!grepl('^[[:alpha:]]{2}$',market)){
+      stop("Argument market must be ISO 3166-1 alpha-2 country code")
+    }
+  }
+  
+  if(limit < 1 | limit > 50 | !is.numeric(limit)){
+    stop("Argument limit must be a number between 1 and 50")
+  }
+  
+  if(offset < 0 | offset > 10000 | !is.numeric(offset)){
+    stop("Argument offset must be a number between 0 and 10000")
+  }
+  
+  if(!is.null(include_external)){
+    if(include_external != "audio"){
+      stop("Argument include external must be 'audio' or null")
+    }
+  }
+  
+  params <- list(
+    q = q,
+    type = paste(type,collapse = ","),
+    market = market,
+    limit = limit,
+    offset = offset,
+    include_external = include_external,
+    access_token = authorization
+  )
+  
+  res <- RETRY('GET', base_url, query = params, encode = "json")
+  stop_for_status(res)
+  
+  res <- fromJSON(content(res, as = "text", encoding = "utf-8"),
+                  flatten = TRUE)
+  
+  res <- res[[glue("{type}s")]]$items %>%
+    as_tibble
+}
 
 
