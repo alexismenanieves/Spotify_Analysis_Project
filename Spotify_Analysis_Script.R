@@ -95,4 +95,8 @@ pearl_jam_songs_clean %>%
   ggplot(aes(Value, fill = Measure)) +
   geom_density(fill = "midnightblue", color = "midnightblue", alpha = .7) +
   facet_wrap(~album_name, scales = "free")
+
+# Step 4. Cluster analysis ------------------------------------------------
+
+
  
