@@ -14,6 +14,8 @@ library(dendextend)
 
 source("Spotify_Analysis_Connection.R")
 
+# PART A - Pearl Jam 
+
 # Step 1. Load data and make basic exploration ----------------------------
 pearl_jam_songs <- retrieve_audio_features("pearl jam")
 dim(pearl_jam_songs)
@@ -172,7 +174,61 @@ ggplot() +
                aes(x = x, y = y, xend = xend, yend = yend),
                size = .5) +
   geom_text(data = label(hcdata),
-            aes(x = x, y = y, label = label, hjust = 0, colour = labs$group),
+            aes(x = x, y = y, label = label, hjust = 0, 
+                colour = labs$group),
             size = 3) +
   coord_flip() +
   scale_y_reverse(expand = c(0.2,0))
+
+# PART B - Pedro Suarez-Vertiz
+
+# Step 1. Load data and make basic exploration ----------------------------
+pedro_songs <- retrieve_audio_features("pedro suarez vertiz")
+
+dim(pedro_songs)
+glimpse(pedro_songs)
+
+# Are there any NA's in the dataset?
+colSums(!is.na(pedro_songs))
+
+# Let's count the albums and the songs per album
+pedro_songs %>% 
+  group_by(album_id) %>%
+  summarise(name = first(album_name),
+            year = first(album_release_year),
+            count = n()) %>%
+  arrange(name) %>%
+  as.data.frame() %>%
+  head(25)
+
+# We can see what songs are in Pontelo en la Lengua and Talk Show albums
+pedro_songs %>% 
+  filter(album_id %in% c("0MJmowf2LOm4U6TJmXHnW1",
+                         "01nnzNP8wRSGdwmXne0a8N",
+                         "6jTyptkI9CVq0qAgQsoxUd",
+                         "7huVX9xQKmsWtRQrS7LCbB")) %>%
+  select(album_name, track_name)
+
+# Step 2. Data cleaning and wrangling -------------------------------------
+pedro_songs_clean <- pedro_songs %>%
+  select(album_id, album_name,album_release_year,
+         track_name, duration_ms, explicit,
+         danceability, energy, loudness,
+         speechiness, acousticness, instrumentalness,
+         liveness, valence, tempo) %>%
+  filter(!album_id %in% c("5Wb51Re0iEMPBKCT1uFDRa",
+                         "7BjsgXmi5ZPl2rT30HLFs8",
+                         "5Ys57kjTWys8pkMMM3guJk",
+                         "6jTyptkI9CVq0qAgQsoxUd")) %>% 
+  mutate(track_name = gsub("\\(Remastered\\)","",track_name),
+         track_name = gsub("- Remastered","",track_name),
+         track_name = trimws(track_name)) %>%
+  filter(!track_name %in% c("Hold On - bonus track",
+                            "Cready Stomp - bonus track",
+                            "Crazy Mary",
+                            "Better Man - Guitar / Organ Only",
+                            "Corduroy - Alternate Take",
+                            "Nothingman - Demo"))
+
+pearl_jam_songs_clean %>%
+  select(album_name, track_name)
