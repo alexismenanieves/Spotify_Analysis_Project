@@ -13,6 +13,7 @@ library(ggdendro)
 library(dendextend)
 
 source("Spotify_Analysis_Connection.R")
+source("Spotify_Analysis_Plot_Config.R")
 
 # PART A - Pearl Jam 
 
@@ -78,7 +79,14 @@ pearl_jam_songs_clean %>%
                values_to = "Value") %>%
   ggplot(aes(Value)) +
   geom_histogram(fill = "midnightblue", alpha = .9) +
-  facet_wrap(~Measure, scales = "free")
+  facet_wrap(~Measure, scales = "free") +
+  labs(
+    title = "Album feature histogram",
+    subtitle = "Artist: Pearl Jam",
+    caption = "Source: Spotify API",
+    x = "value",
+    y = "count"
+  )
 
 # Let's see the density plot of energy by album
 pearl_jam_songs_clean %>%
@@ -87,7 +95,14 @@ pearl_jam_songs_clean %>%
                values_to = "Value") %>%
   ggplot(aes(Value, fill = Measure)) +
   geom_density(fill = "seagreen", color = "seagreen", alpha = .7) +
-  facet_wrap(~album_name, scales = "free")
+  facet_wrap(~album_name, scales = "free") +
+  labs(
+    title = "Energy density plot by album",
+    subtitle = "Artist: Pearl Jam",
+    caption = "Source: Spotify API",
+    x = "value",
+    y = "density"
+  )
 
 # And now the density plot of loudness by album
 pearl_jam_songs_clean %>%
@@ -96,7 +111,14 @@ pearl_jam_songs_clean %>%
                values_to = "Value") %>%
   ggplot(aes(Value, fill = Measure)) +
   geom_density(fill = "midnightblue", color = "midnightblue", alpha = .7) +
-  facet_wrap(~album_name, scales = "free")
+  facet_wrap(~album_name, scales = "free") +
+  labs(
+    title = "Loudness density plot by album",
+    subtitle = "Artist: Pearl Jam",
+    caption = "Source: Spotify API",
+    x = "value",
+    y = "count"
+  )
 
 # Step 4. Cluster analysis ------------------------------------------------
 songs_distance <- pearl_jam_songs_clean %>%
@@ -241,7 +263,14 @@ pedro_songs_clean %>%
                values_to = "Value") %>%
   ggplot(aes(Value)) +
   geom_histogram(fill = "midnightblue", alpha = .9) +
-  facet_wrap(~Measure, scales = "free")
+  facet_wrap(~Measure, scales = "free") +
+  labs(
+    title = "Album feature histogram",
+    subtitle = "Artist: Pedro Suarez-Vertiz",
+    caption = "Source: Spotify API",
+    x = "value",
+    y = "count"
+  )
 
 # Let's see the density plot of energy by album
 pedro_songs_clean %>%
@@ -250,7 +279,14 @@ pedro_songs_clean %>%
                values_to = "Value") %>%
   ggplot(aes(Value, fill = Measure)) +
   geom_density(fill = "seagreen", color = "seagreen", alpha = .7) +
-  facet_wrap(~album_name, scales = "free")
+  facet_wrap(~album_name, scales = "free") +
+  labs(
+    title = "Energy density plot by album",
+    subtitle = "Artist: Pedro Suarez-Vertiz",
+    caption = "Source: Spotify API",
+    x = "value",
+    y = "density"
+  )
 
 # And now the density plot of loudness by album
 pedro_songs_clean %>%
@@ -259,4 +295,11 @@ pedro_songs_clean %>%
                values_to = "Value") %>%
   ggplot(aes(Value, fill = Measure)) +
   geom_density(fill = "midnightblue", color = "midnightblue", alpha = .7) +
-  facet_wrap(~album_name, scales = "free")
+  facet_wrap(~album_name, scales = "free") +
+  labs(
+    title = "Loudness density plot by album",
+    subtitle = "Artist: Pedro Suarez-Vertiz",
+    caption = "Source: Spotify API",
+    x = "value",
+    y = "count"
+  )
