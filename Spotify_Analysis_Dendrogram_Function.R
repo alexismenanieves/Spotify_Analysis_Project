@@ -13,24 +13,24 @@ dendro_data_c <- function(hc, clusters){
   hcdata <- ggdendro::dendro_data(hc,type = "rectangle")
   segments <- hcdata$segments
   lab_clust <- cutree(hc, clusters)[hc$order]
-  seg_clust <- rep(0,nrow(segments))
+  seg_clust <- rep(0L, nrow(segments))
   heights <- sort(hc$height, decreasing = TRUE)
   height <- mean(c(heights[clusters],heights[clusters - 1]), na.rm = TRUE)
   
-  for(i in 1:c){
+  for(i in 1:clusters){
     xi <- hcdata$labels$x[lab_clust == i]
     idx1 <- segments$x >= min(xi) & segments$x <= max(xi)
     idx2 <- segments$xend >= min(xi) & segments$xend <= max(xi)
     idx3 <- segments$yend < height
     idx <- idx1 & idx2 & idx3
-    seg_clust[idx] <- 1
+    seg_clust[idx] <- i
   }
   
-  idx <- which(seg_clust == 0)
-  seg_clust[idx] <- seg_clust[idx + 1]
+  idx <- which(seg_clust == 0L)
+  seg_clust[idx] <- seg_clust[idx + 1L]
   hcdata$segments$clust <- seg_clust
-  hcdata$segments$line <- as.integer(seg_clust < 1)
-  hcdata$labesl$clust <- lab_clust
+  hcdata$segments$line <- as.integer(seg_clust < 1L)
+  hcdata$labels$clust <- lab_clust
   
   hcdata
 }
@@ -50,7 +50,7 @@ set_label_params <- function(nblabels,
     if(direction %in% c("tb","bt")){
       angle <- angle + 45
     }
-    if(direction %in% c("lr","rl")){
+    if(direction %in% c("tb","rl")){
       hjust <- 1
     }
   }
@@ -59,9 +59,9 @@ set_label_params <- function(nblabels,
 
 plot_ggdendro <- function(hcdata,
                           direction = c("tb","bt","lr","rl"),
-                          fan = false,
+                          fan = FALSE,
                           scale.color = NULL,
-                          brach.size = 1,
+                          branch.size = 1,
                           label.size = 3,
                           nudge.label = 0.01,
                           expand.y = 0.1){
@@ -83,16 +83,16 @@ plot_ggdendro <- function(hcdata,
                          limits = c(0, nrow(label(hcdata)))) +
       scale_y_reverse(breaks = ybreaks)
   } else {
-    p <- p + scale_x_continuous(break = NULL) +
-      if(direction %in% c("lr","rl")){
-        p + coord_flip()
-      }
-      if(direction %in% c("bt","lr")){
-        p <- p + scale_y_reverse(breaks = ybreaks)
-      } else {
-        p <- p + scale_y_continuous(breaks = ybreaks)
-        nudge.label <- -(nudge.label)
-      }
+    p <- p + scale_x_continuous(breaks = NULL)
+    if(direction %in% c("lr","rl")){
+      p + coord_flip()
+    }
+    if(direction %in% c("bt","lr")){
+      p <- p + scale_y_reverse(breaks = ybreaks)
+    } else {
+      p <- p + scale_y_continuous(breaks = ybreaks)
+      nudge.label <- -(nudge.label)
+    }
   }
   
   labelParams <- set_label_params(nrow(hcdata$labels),
